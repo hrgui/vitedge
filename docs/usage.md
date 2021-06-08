@@ -44,7 +44,24 @@ Then, simply import `handleEvent` in your worker entry point:
 import { handleEvent } from 'vitedge/worker'
 
 addEventListener('fetch', (event) => {
-  event.respondWith(handleEvent(event))
+  try {
+    event.respondWith(
+      handleEvent(event, {
+        http2ServerPush: {
+          destinations: ['style'],
+        },
+        willRequestApi({ url, query }) {
+          console.log('API:', url.pathname, query)
+        },
+      })
+    )
+  } catch (error) {
+    event.respondWith(
+      new Response(error.message || error.toString(), {
+        status: 500,
+      })
+    )
+  }
 })
 ```
 
